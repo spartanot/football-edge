@@ -1,0 +1,54 @@
+name: Update data
+
+on:
+  schedule:
+    - cron: "0 11,23 * * *"   # twice a day (7 AM and 7 PM Eastern)
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install packages
+        run: pip install pandas pyarrow scipy numpy
+
+      - name: Download latest data and rebuild the model
+        run: python update.py
+
+      - name: Save data.json to the repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
+          git add data.json
+          git diff --staged --quiet || git commit -m "Update data"
+          git push
+
+      - name: Prepare website files
+        run: mkdir site && cp index.html data.json site/
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4
