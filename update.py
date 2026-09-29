@@ -162,6 +162,21 @@ def run(games=None, pbp=None, out="data.json"):
                  model=sum((r[11] >= .5) == (r[7] > r[6]) for r in decided),
                  vn=len(val), vw=sum(r[6] != r[7] and ((r[7] > r[6]) == (s_ == "h")) for r, s_, o in val),
                  vdog=sum(o > 0 for _, _, o in val), weeks=sorted({r[1] for r in past}))
+    # "best bets": each week, the 3 most likely winners where model and oddsmakers agree
+    bb = dict(n=0, w=0, profit=0.0)
+    for wk in sorted({r[1] for r in past}):
+        cands = []
+        for r in (r for r in past if r[1] == wk):
+            for sd_, pk, pmod, o in (("h", r[10], r[11], r[9]), ("a", 1 - r[10], 1 - r[11], r[8])):
+                if pk > .5 and pmod > .5:
+                    cands.append(((pk + pmod) / 2, r, sd_, o))
+        for _, r, sd_, o in sorted(cands, key=lambda c: -c[0])[:3]:
+            if r[6] == r[7]:
+                continue
+            won = (r[7] > r[6]) == (sd_ == "h")
+            bb["n"] += 1; bb["w"] += won; bb["profit"] += 100 * (dec(o) - 1) if won else -100
+    bb["profit"] = round(bb["profit"], 2)
+    stats["best"] = bb
     data = dict(updated=dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC"), season=season,
                 games=games, past=past, teams=teams, hist=";".join(hist), stats=stats)
     with open(out, "w") as f:

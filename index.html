@@ -46,6 +46,7 @@ td,th{padding:6px 4px;text-align:left;border-bottom:1px solid var(--bd)}
 <div class="card"><div class="mu">Play-money balance</div><div class="big" id="bal"></div><div class="mu" id="pst"></div>
 <svg id="chart" viewBox="0 0 300 70" style="width:100%;height:70px;margin-top:8px"></svg>
 <div style="margin-top:6px"><button class="sm" id="rst">Reset to $1,000</button><button class="sm" id="hist">Bet history</button></div></div>
+<div class="card" id="bestCard"><b>Best bets this week</b><div class="mu" style="margin-top:4px">The three most likely winners where the oddsmakers and our model agree. Tap one to add it to your bet slip.</div><div id="bestList"></div><div class="mu" id="bestRec" style="margin-top:8px"></div></div>
 <div class="card"><b>How to read the predictions</b><div class="mu" style="margin-top:4px">Each game shows two win chances. <b>Oddsmakers</b> is the sportsbook line with its margin removed. <b>Data model</b> is our own model built from quarterback play, opponent-adjusted team efficiency (play-by-play EPA), an Elo rating from past scores, and home field. <span id="accTxt"></span> The model is retrained every day on past seasons plus this season's finished games. Use it as a second opinion, not an edge.</div></div>
 <div class="card"><b>Upcoming NFL games</b><div class="mu">Sportsbook lines from nflverse, updated <span id="updTxt"></span> (<a href="https://github.com/spartanot/football-edge/actions/workflows/update.yml" target="_blank" rel="noopener" style="color:var(--ac)">update now</a>, site owner only). Bets settle automatically when final scores come in, or enter a final score yourself.</div><div id="games"></div></div>
 <div class="card" id="bh" hidden></div>
@@ -307,6 +308,13 @@ $('seasonLbl').textContent=D.season;$('updTxt').textContent=D.updated;
 const St=D.stats,pc=(a,b)=>b?Math.round(a/b*100)+'%':'n/a';
 $('accTxt').textContent=St.n?`So far this season, the oddsmakers picked ${St.book} of ${St.n} winners (${pc(St.book,St.n)}) and our model ${St.model} (${pc(St.model,St.n)}).`:'No games have been played yet this season.';
 $('valTxt').textContent=St.vn?`So far this season, ${St.vn} value bets won ${St.vw} times (${pc(St.vw,St.vn)}), and ${St.vdog} of them were on underdogs.`:'No value bets have been settled yet this season.';
+function renderBest(){const wk=UPC.length?Math.min(...UPC.map(g=>g.wk)):null,c=[];
+ UPC.filter(g=>g.wk===wk).forEach(g=>{[['h',g.kp,g.mp,g.hm,g.h],['a',1-g.kp,1-g.mp,g.am,g.a]].forEach(([sd,pk,pmod,o,t])=>{if(pk>.5&&pmod>.5)c.push({g,sd,pk,pmod,o,t,avg:(pk+pmod)/2})})});
+ const top=c.sort((x,y)=>y.avg-x.avg).slice(0,3);
+ $('bestList').innerHTML=top.length?top.map((b,i)=>`<div class="gm"><b>${i+1}. ${b.t} to win</b> <span class="mu">${b.g.a} @ ${b.g.h}, week ${b.g.wk}</span><div class="pr">Oddsmakers ${Math.round(b.pk*100)}% · Model ${Math.round(b.pmod*100)}% · Line ${am(b.o)} (a $100 bet wins ${usd(100*(dec(b.o)-1))})</div><button class="sm" style="margin-top:6px" onclick="tog('${b.g.id}|ml|${b.sd}')">Add to bet slip</button></div>`).join(''):'<div class="mu" style="margin-top:8px">No picks right now. Check back after the next update.</div>';
+ const B=St.best||{n:0};
+ $('bestRec').textContent=(B.n?`This season, these picks have won ${B.w} of ${B.n} (${pc(B.w,B.n)}). $100 on each would be ${B.profit>=0?'up':'down'} ${usd(Math.abs(B.profit))}. `:'')+'In testing on past seasons they won about 79% of the time but still lost about 2% per bet, because favorites pay so little. Most likely to win is not the same as a good bet.'}
+renderBest();
 settle();saveP();renderAll();
 const PAST=D.past;
 const STR=[{n:'Oddsmakers favorite',c:'#2f7ed8',f:r=>[r[10]>=.5?'h':'a']},{n:'Model pick',c:'var(--ac)',f:r=>[r[11]>=.5?'h':'a']},{n:'Model value bets',c:'#d9822b',f:r=>[['h',r[11],r[9]],['a',1-r[11],r[8]]].filter(x=>x[1]*dec(x[2])-1>=.03).map(x=>x[0])}];
