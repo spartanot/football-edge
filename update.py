@@ -161,7 +161,10 @@ def run(games=None, pbp=None, out="data.json"):
     stats = dict(n=len(decided), book=sum((r[10] >= .5) == (r[7] > r[6]) for r in decided),
                  model=sum((r[11] >= .5) == (r[7] > r[6]) for r in decided),
                  vn=len(val), vw=sum(r[6] != r[7] and ((r[7] > r[6]) == (s_ == "h")) for r, s_, o in val),
-                 vdog=sum(o > 0 for _, _, o in val), weeks=sorted({r[1] for r in past}))
+                 vdog=sum(o > 0 for _, _, o in val),
+                 vprofit=round(sum(0 if r[6] == r[7] else (100 * (dec(o) - 1) if (r[7] > r[6]) == (s_ == "h") else -100)
+                                   for r, s_, o in val), 2),
+                 weeks=sorted({r[1] for r in past}))
     # "best bets": each week, the 3 most likely winners where model and oddsmakers agree
     bb = dict(n=0, w=0, profit=0.0)
     for wk in sorted({r[1] for r in past}):
