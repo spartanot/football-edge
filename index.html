@@ -37,15 +37,18 @@ td,th{padding:6px 4px;text-align:left;border-bottom:1px solid var(--bd)}
 #gate{position:fixed;inset:0;background:var(--bg);z-index:9;display:flex;align-items:center;justify-content:center;padding:24px}
 .pr{margin-top:6px;font-size:13px;color:var(--mu)}.bar{height:6px;border-radius:3px;background:var(--bd);overflow:hidden;margin:3px 0}.bar i{display:block;height:100%;background:var(--ac)}
 .pkb{margin-top:6px;padding:8px;border-radius:8px;background:var(--bg);border:1px solid var(--bd);font-size:14px}.pkg{border:2px solid var(--ac)}
+.sct{width:auto;margin-top:6px}.sct td,.sct th{padding:2px 14px 2px 0;border:0;text-align:center}.sct td:first-child{text-align:left;color:var(--mu)}.lv{color:#e0442f;font-weight:600;white-space:nowrap}
 .sc{display:flex;gap:6px;margin-top:6px}.sc input{padding:6px;font-size:14px}
 </style></head><body><div id="gate" hidden><div style="max-width:380px"><h1>🏈 Football Edge</h1><p>This is a play-money betting simulator. No real money can be deposited, won, or withdrawn.</p><p>You must be 18 or older (21+ in some places) to use it.</p><button class="btn" id="agy">I'm 18 or older</button><p class="mu">If gambling is causing problems for you or someone you know, call or text 1-800-GAMBLER.</p></div></div>
 <main>
 <h1>🏈 Football Edge <span class="mu" style="font-size:14px;font-weight:400">NFL <span id="seasonLbl"></span></span></h1>
 
 <div class="seg" id="nav"><button class="on" onclick="location.href='./'">NFL</button><button onclick="location.href='college.html'">College</button></div>
-<div class="seg" id="tabs"><button class="on" data-t="p">Play</button><button data-t="a">Analyze</button><button data-t="b">Tracker</button><button data-t="k">Picks</button><button data-t="r">Results</button></div>
+<div class="seg" id="top"><button class="on" data-v="g">Games</button><button data-v="m">More</button></div>
+<div id="more" hidden><div class="seg" id="tabs"><button class="on" data-t="p">Play</button><button data-t="a">Analyze</button><button data-t="b">Tracker</button><button data-t="k">Picks</button><button data-t="r">Results</button></div></div>
 
-<div id="P">
+<div id="G"><div class="card"><input id="gq" placeholder="Search for a team"><div class="mu" id="gnote" style="margin-top:6px"></div></div><div id="gMain"></div></div>
+<div id="P" hidden>
 <div class="card"><div class="mu">Play-money balance</div><div class="big" id="bal"></div><div class="mu" id="pst"></div>
 <svg id="chart" viewBox="0 0 300 70" style="width:100%;height:70px;margin-top:8px"></svg>
 <div style="margin-top:6px"><button class="sm" id="rst">Reset to $1,000</button><button class="sm" id="hist">Bet history</button></div></div>
@@ -163,7 +166,7 @@ function calc(){
 document.querySelectorAll('#lg button').forEach(b=>b.onclick=()=>setLeague(b.dataset.l));
 document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{
  document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));
- ['P','A','B','C','R','K'].forEach(k=>$(k).hidden=b.dataset.t!==k.toLowerCase());});
+ ['P','A','B','C','R','K'].forEach(k=>$(k).hidden=b.dataset.t!==k.toLowerCase());$('G').hidden=true;});
 
 let bets=[];
 try{bets=JSON.parse(localStorage.getItem('fe_bets')||'[]')}catch(e){}
@@ -343,6 +346,52 @@ function renderPicks(){
   <div class="mu" style="font-size:12px;margin-top:4px">Other bets: ${B.slice(1).map(x=>`${x.lab} ${am(x.o)} (${evTxt(x.ev)})`).join(' · ')}</div>`:'<div class="mu">No lines yet.</div>'}</div>`}).join(''):'<div class="mu" style="margin-top:8px">No upcoming games with lines yet.</div>'}
 renderPicks();
 if(typeof UPCF==='function'){$('cf').addEventListener('change',renderPicks);$('q').addEventListener('input',renderPicks)}
+/* ---------- Main "Games" page ---------- */
+const IS_CFB=PSD===16;let LIVE=[],liveOK=null;
+const nz=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+const NFLMAP={LAR:'LA',WSH:'WAS'};
+function etOff(d){const y=+d.slice(0,4),nth=(m,n)=>{const x=new Date(Date.UTC(y,m,1)),dd=(7-x.getUTCDay())%7+1+7*(n-1);return `${y}-${String(m+1).padStart(2,'0')}-${String(dd).padStart(2,'0')}`};return d>=nth(2,2)&&d<nth(10,1)?'-04:00':'-05:00'}
+const kick=g=>new Date(`${g.d}T${g.t&&g.t!=='TBD'?g.t:'12:00'}:00${etOff(g.d)}`);
+function tm(team,name){if(!team)return false;if(!IS_CFB)return (NFLMAP[team.abbreviation]||team.abbreviation)===name;const n=nz(name);return [team.location,team.shortDisplayName,team.displayName,team.abbreviation,team.nickname].some(x=>nz(x)===n)}
+function liveFor(g){const k=kick(g);for(const e of LIVE){if(Math.abs(e.date-k)>36*3600e3)continue;
+ if(tm(e.h,g.h)&&tm(e.a,g.a))return e;if(tm(e.h,g.a)&&tm(e.a,g.h))return{...e,hs:e.as,as:e.hs}}return null}
+const ymd=d=>d.toISOString().slice(0,10).replace(/-/g,'');
+async function fetchLive(){
+ const s=ymd(new Date(Date.now()-3*864e5)),e=ymd(new Date(Date.now()+2*864e5)),base=`https://site.api.espn.com/apis/site/v2/sports/football/${IS_CFB?'college-football':'nfl'}/scoreboard?dates=${s}-${e}&limit=500`;
+ const urls=IS_CFB?[base+'&groups=80',base+'&groups=81']:[base];
+ try{const js=await Promise.all(urls.map(u=>fetch(u).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()})));
+  LIVE=js.flatMap(j=>(j.events||[]).map(ev=>{const c=(ev.competitions||[])[0]||{},t=c.competitors||[],H=t.find(x=>x.homeAway==='home')||{},A=t.find(x=>x.homeAway==='away')||{},st=ev.status||{};
+   return{st:(st.type||{}).state,det:(st.type||{}).shortDetail||'',per:st.period||0,clk:st.clock||0,h:H.team,a:A.team,hs:+H.score||0,as:+A.score||0,date:new Date(ev.date)}}));liveOK=true}
+ catch(err){liveOK=false}
+ renderMain()}
+function predScore(g){const p=Math.min(.99,Math.max(.01,g.mp!=null?g.mp:g.kp)),mu=PSD*invPhi(p),T=g.tot||(IS_CFB?54:44);return{h:Math.max(0,Math.round((T+mu)/2)),a:Math.max(0,Math.round((T-mu)/2)),p}}
+function gcard(x){const g=x.g,lv=x.lv,P=predScore(g),fin=x.st==='final',live=x.st==='live';
+ const sa=lv&&(live||lv.st==='post')?lv.as:(g.sa!=null?g.sa:null),sh=lv&&(live||lv.st==='post')?lv.hs:(g.sh!=null?g.sh:null);
+ const when=x.k.toLocaleString(undefined,{weekday:'short',hour:'numeric',minute:'2-digit'});
+ const label=live?`<span class="lv">● ${lv&&lv.det?lv.det:'In progress'}</span>`:fin?`<span class="mu">Final · ${x.k.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</span>`:`<span class="mu">${g.t==='TBD'?x.k.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})+', time TBD':when}</span>`;
+ const fav=P.p>=.5?g.h:g.a,fp=Math.round(Math.max(P.p,1-P.p)*100);
+ const right=fin&&sa!==sh?((sh>sa)===(P.p>=.5)):null;
+ const bold=(a,b)=>a!=null&&b!=null&&a>b?'font-weight:700':'';
+ return `<div class="gm"><div style="display:flex;justify-content:space-between;gap:8px"><b>${g.a} @ ${g.h}</b>${label}</div>
+ <table class="sct"><tr><th></th><th>${g.a}</th><th>${g.h}</th></tr>
+ <tr><td>${fin?'Final':'Score'}</td><td style="${bold(sa,sh)}">${sa!=null?sa:'–'}</td><td style="${bold(sh,sa)}">${sh!=null?sh:'–'}</td></tr>
+ <tr><td>Predicted</td><td>${P.a}</td><td>${P.h}</td></tr></table>
+ <div class="mu" style="font-size:13px">Model: ${fav} ${fp}% to win${right===null?'':right?' · <span class="pos">model was right</span>':' · <span class="neg">model was wrong</span>'}</div></div>`}
+function renderMain(){const now=Date.now(),q=nz($('gq').value);
+ const rows=GAMES.filter(g=>!q||nz(g.a).includes(q)||nz(g.h).includes(q)).map(g=>{const lv=liveFor(g),k=kick(g);let st;
+  if(lv&&lv.st==='in')st='live';else if((lv&&lv.st==='post')||g.sh!=null)st='final';else if(k<=now&&now-k<4.5*3600e3)st='live';else st='pre';return{g,lv,k,st}});
+ const remain=x=>{const l=x.lv;if(l&&l.st==='in'){const r=l.per>4?l.clk:(4-l.per)*900+l.clk;return r*2.6*1000}return x.k.getTime()+3.25*3600e3-now};
+ const live=rows.filter(x=>x.st==='live').sort((a,b)=>remain(a)-remain(b));
+ const up=rows.filter(x=>x.st==='pre'&&x.k>now&&x.k<=now+48*3600e3).sort((a,b)=>a.k-b.k);
+ const past=rows.filter(x=>x.st==='final'&&x.k<=now&&x.k>=now-(48+3.5)*3600e3).sort((a,b)=>b.k-a.k);
+ const sec=(t,L,empty)=>`<div class="card"><b>${t}</b>${L.length?L.map(gcard).join(''):`<div class="mu" style="margin-top:6px">${empty}</div>`}</div>`;
+ $('gMain').innerHTML=(live.length?sec('Live now (ending soonest first)',live,''):'')+sec('Next 2 days',up,'No games in the next 2 days.')+sec('Final, last 2 days',past,'No finished games in the last 2 days.');
+ $('gnote').textContent=(liveOK===true?'Live scores from ESPN, refreshed every minute. ':liveOK===false?'Live scores are unavailable right now, so scores update with each data refresh. ':'Loading live scores… ')+'Predicted scores combine our model\'s win chance with the betting total.'}
+function showView(v){document.querySelectorAll('#top button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));const g=v==='g';$('G').hidden=!g;$('more').hidden=g;
+ if(g)['P','A','B','C','R','K'].forEach(k=>$(k).hidden=true);else(document.querySelector('#tabs button.on')||document.querySelector('#tabs button')).click()}
+document.querySelectorAll('#top button').forEach(b=>b.onclick=()=>showView(b.dataset.v));
+$('gq').oninput=renderMain;renderMain();fetchLive();setInterval(fetchLive,60000);
+
 
 const PAST=D.past;
 const STR=[{n:'Oddsmakers favorite',c:'#2f7ed8',f:r=>[r[10]>=.5?'h':'a']},{n:'Model pick',c:'var(--ac)',f:r=>[r[11]>=.5?'h':'a']},{n:'Model value bets',c:'#d9822b',f:r=>[['h',r[11],r[9]],['a',1-r[11],r[8]]].filter(x=>x[1]*dec(x[2])-1>=.03).map(x=>x[0])}];
