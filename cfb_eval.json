@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-03 20:55 UTC",
+ "updated": "2026-10-03 23:30 UTC",
  "dev_seasons": [
   2023,
   2024
@@ -15,21 +15,21 @@
    "games": 1625
   },
   "test": {
-   "log_loss": 0.477,
-   "picked_winner": 0.77,
-   "games": 1336
+   "log_loss": 0.4813,
+   "picked_winner": 0.767,
+   "games": 1365
   }
  },
  "current_model": {
   "dev": {
-   "log_loss": 0.5706,
+   "log_loss": 0.5707,
    "picked_winner": 0.706,
    "games": 1625
   },
   "test": {
-   "log_loss": 0.5428,
-   "picked_winner": 0.737,
-   "games": 1336
+   "log_loss": 0.5457,
+   "picked_winner": 0.735,
+   "games": 1365
   }
  },
  "each_group_added": {
@@ -40,9 +40,9 @@
     "games": 1625
    },
    "test": {
-    "log_loss": 0.544,
-    "picked_winner": 0.735,
-    "games": 1336
+    "log_loss": 0.5467,
+    "picked_winner": 0.733,
+    "games": 1365
    }
   },
   "returning": {
@@ -52,21 +52,21 @@
     "games": 1625
    },
    "test": {
-    "log_loss": 0.544,
-    "picked_winner": 0.74,
-    "games": 1336
+    "log_loss": 0.5464,
+    "picked_winner": 0.738,
+    "games": 1365
    }
   },
   "talent": {
    "dev": {
     "log_loss": 0.5666,
-    "picked_winner": 0.704,
+    "picked_winner": 0.703,
     "games": 1625
    },
    "test": {
-    "log_loss": 0.5436,
-    "picked_winner": 0.739,
-    "games": 1336
+    "log_loss": 0.5463,
+    "picked_winner": 0.736,
+    "games": 1365
    }
   },
   "portal": {
@@ -76,9 +76,9 @@
     "games": 1625
    },
    "test": {
-    "log_loss": 0.5464,
-    "picked_winner": 0.731,
-    "games": 1336
+    "log_loss": 0.549,
+    "picked_winner": 0.728,
+    "games": 1365
    }
   },
   "coach": {
@@ -88,9 +88,9 @@
     "games": 1625
    },
    "test": {
-    "log_loss": 0.5448,
-    "picked_winner": 0.734,
-    "games": 1336
+    "log_loss": 0.5475,
+    "picked_winner": 0.732,
+    "games": 1365
    }
   },
   "line_move": {
@@ -100,9 +100,9 @@
     "games": 1625
    },
    "test": {
-    "log_loss": 0.5435,
-    "picked_winner": 0.734,
-    "games": 1336
+    "log_loss": 0.5462,
+    "picked_winner": 0.731,
+    "games": 1365
    }
   },
   "advanced": {
@@ -112,41 +112,91 @@
     "games": 1625
    },
    "test": {
-    "log_loss": 0.5364,
-    "picked_winner": 0.737,
-    "games": 1336
+    "log_loss": 0.5407,
+    "picked_winner": 0.734,
+    "games": 1365
+   }
+  },
+  "qb": {
+   "dev": {
+    "log_loss": 0.5707,
+    "picked_winner": 0.706,
+    "games": 1625
+   },
+   "test": {
+    "log_loss": 0.5457,
+    "picked_winner": 0.735,
+    "games": 1365
+   }
+  },
+  "turnovers": {
+   "dev": {
+    "log_loss": 0.5709,
+    "picked_winner": 0.703,
+    "games": 1625
+   },
+   "test": {
+    "log_loss": 0.5435,
+    "picked_winner": 0.732,
+    "games": 1365
+   }
+  },
+  "havoc": {
+   "dev": {
+    "log_loss": 0.5709,
+    "picked_winner": 0.708,
+    "games": 1625
+   },
+   "test": {
+    "log_loss": 0.5458,
+    "picked_winner": 0.736,
+    "games": 1365
+   }
+  },
+  "fcs": {
+   "dev": {
+    "log_loss": 0.5663,
+    "picked_winner": 0.704,
+    "games": 1625
+   },
+   "test": {
+    "log_loss": 0.5325,
+    "picked_winner": 0.734,
+    "games": 1365
    }
   }
  },
  "selected_groups": [
+  "fcs",
   "returning",
+  "advanced",
   "talent",
   "line_move",
-  "advanced",
-  "portal"
+  "portal",
+  "coach"
  ],
  "selected_model": {
   "dev": {
-   "log_loss": 0.5559,
+   "log_loss": 0.5519,
    "picked_winner": 0.722,
    "games": 1625
   },
   "test": {
-   "log_loss": 0.5418,
-   "picked_winner": 0.739,
-   "games": 1336
+   "log_loss": 0.5297,
+   "picked_winner": 0.74,
+   "games": 1365
   }
  },
  "all_groups": {
   "dev": {
-   "log_loss": 0.5563,
-   "picked_winner": 0.719,
+   "log_loss": 0.5531,
+   "picked_winner": 0.72,
    "games": 1625
   },
   "test": {
-   "log_loss": 0.5442,
-   "picked_winner": 0.73,
-   "games": 1336
+   "log_loss": 0.5299,
+   "picked_winner": 0.739,
+   "games": 1365
   }
  },
  "fbs_vs_fbs_only": {
@@ -157,23 +207,120 @@
     "games": 1559
    },
    "test": {
-    "log_loss": 0.51,
-    "picked_winner": 0.746,
-    "games": 1004
+    "log_loss": 0.5118,
+    "picked_winner": 0.744,
+    "games": 1019
    }
   },
   "selected_model": {
    "dev": {
-    "log_loss": 0.5631,
+    "log_loss": 0.5625,
     "picked_winner": 0.715,
     "games": 1559
    },
    "test": {
-    "log_loss": 0.5536,
-    "picked_winner": 0.728,
-    "games": 1004
+    "log_loss": 0.5569,
+    "picked_winner": 0.719,
+    "games": 1019
    }
   }
  },
- "download_problems": []
+ "download_problems": [
+  "2021 qbv1_postseason_1: HTTP Error 500: Internal Server Error",
+  "2021 qbv1_regular_1: HTTP Error 500: Internal Server Error",
+  "2021 qbv1_regular_2: HTTP Error 500: Internal Server Error",
+  "2021 qbv1_regular_3: HTTP Error 500: Internal Server Error",
+  "2021 qbv1_regular_4: HTTP Error 500: Internal Server Error",
+  "2021 qbv1_regular_5: HTTP Error 500: Internal Server Error",
+  "2021 qbv1_regular_6: HTTP Error 500: Internal Server Error",
+  "2021 qbv1_regular_7: HTTP Error 500: Internal Server Error",
+  "2021 qbv1_regular_8: HTTP Error 500: Internal Server Error",
+  "2021 qbv1_regular_9: HTTP Error 500: Internal Server Error",
+  "2021 qbv1_regular_10: HTTP Error 500: Internal Server Error",
+  "2021 qbv1_regular_11: HTTP Error 500: Internal Server Error",
+  "2021 qbv1_regular_12: HTTP Error 500: Internal Server Error",
+  "2021 qbv1_regular_13: HTTP Error 500: Internal Server Error",
+  "2021 qbv1_regular_14: HTTP Error 500: Internal Server Error",
+  "2021 qbv1_regular_15: HTTP Error 500: Internal Server Error",
+  "2021 boxv1_regular_3: HTTP Error 503: Service Unavailable",
+  "2022 qbv1_postseason_1: HTTP Error 500: Internal Server Error",
+  "2022 qbv1_regular_1: HTTP Error 500: Internal Server Error",
+  "2022 qbv1_regular_2: HTTP Error 500: Internal Server Error",
+  "2022 qbv1_regular_3: HTTP Error 500: Internal Server Error",
+  "2022 qbv1_regular_4: HTTP Error 500: Internal Server Error",
+  "2022 qbv1_regular_5: HTTP Error 500: Internal Server Error",
+  "2022 qbv1_regular_6: HTTP Error 500: Internal Server Error",
+  "2022 qbv1_regular_7: HTTP Error 500: Internal Server Error",
+  "2022 qbv1_regular_8: HTTP Error 500: Internal Server Error",
+  "2022 qbv1_regular_9: HTTP Error 500: Internal Server Error",
+  "2022 qbv1_regular_10: HTTP Error 500: Internal Server Error",
+  "2022 qbv1_regular_11: HTTP Error 500: Internal Server Error",
+  "2022 qbv1_regular_12: HTTP Error 500: Internal Server Error",
+  "2022 qbv1_regular_13: HTTP Error 500: Internal Server Error",
+  "2022 qbv1_regular_14: HTTP Error 500: Internal Server Error",
+  "2022 qbv1_regular_15: HTTP Error 500: Internal Server Error",
+  "2023 qbv1_postseason_1: HTTP Error 500: Internal Server Error",
+  "2023 qbv1_postseason_11: HTTP Error 500: Internal Server Error",
+  "2023 qbv1_postseason_12: HTTP Error 500: Internal Server Error",
+  "2023 qbv1_postseason_13: HTTP Error 500: Internal Server Error",
+  "2023 qbv1_postseason_14: HTTP Error 500: Internal Server Error",
+  "2023 qbv1_postseason_15: HTTP Error 500: Internal Server Error",
+  "2023 qbv1_regular_1: HTTP Error 500: Internal Server Error",
+  "2023 qbv1_regular_2: HTTP Error 500: Internal Server Error",
+  "2023 qbv1_regular_3: HTTP Error 500: Internal Server Error",
+  "2023 qbv1_regular_4: HTTP Error 500: Internal Server Error",
+  "2023 qbv1_regular_5: HTTP Error 500: Internal Server Error",
+  "2023 qbv1_regular_6: HTTP Error 500: Internal Server Error",
+  "2023 qbv1_regular_7: HTTP Error 500: Internal Server Error",
+  "2023 qbv1_regular_8: HTTP Error 500: Internal Server Error",
+  "2023 qbv1_regular_9: HTTP Error 500: Internal Server Error",
+  "2023 qbv1_regular_10: HTTP Error 500: Internal Server Error",
+  "2023 qbv1_regular_11: HTTP Error 500: Internal Server Error",
+  "2023 qbv1_regular_12: HTTP Error 500: Internal Server Error",
+  "2023 qbv1_regular_13: HTTP Error 500: Internal Server Error",
+  "2023 qbv1_regular_14: HTTP Error 500: Internal Server Error",
+  "2023 qbv1_regular_15: HTTP Error 500: Internal Server Error",
+  "2024 qbv1_postseason_1: HTTP Error 500: Internal Server Error",
+  "2024 qbv1_regular_1: HTTP Error 500: Internal Server Error",
+  "2024 qbv1_regular_2: HTTP Error 500: Internal Server Error",
+  "2024 qbv1_regular_3: HTTP Error 500: Internal Server Error",
+  "2024 qbv1_regular_4: HTTP Error 500: Internal Server Error",
+  "2024 qbv1_regular_5: HTTP Error 500: Internal Server Error",
+  "2024 qbv1_regular_6: HTTP Error 500: Internal Server Error",
+  "2024 qbv1_regular_7: HTTP Error 500: Internal Server Error",
+  "2024 qbv1_regular_8: HTTP Error 500: Internal Server Error",
+  "2024 qbv1_regular_9: HTTP Error 500: Internal Server Error",
+  "2024 qbv1_regular_10: HTTP Error 500: Internal Server Error",
+  "2024 qbv1_regular_11: HTTP Error 500: Internal Server Error",
+  "2024 qbv1_regular_12: HTTP Error 500: Internal Server Error",
+  "2024 qbv1_regular_13: HTTP Error 500: Internal Server Error",
+  "2024 qbv1_regular_14: HTTP Error 500: Internal Server Error",
+  "2024 qbv1_regular_15: HTTP Error 500: Internal Server Error",
+  "2024 qbv1_regular_16: HTTP Error 500: Internal Server Error",
+  "2024 boxv1_regular_7: HTTP Error 503: Service Unavailable",
+  "2025 qbv1_postseason_1: HTTP Error 500: Internal Server Error",
+  "2025 qbv1_postseason_13: HTTP Error 500: Internal Server Error",
+  "2025 qbv1_postseason_14: HTTP Error 500: Internal Server Error",
+  "2025 qbv1_regular_1: HTTP Error 500: Internal Server Error",
+  "2025 qbv1_regular_2: HTTP Error 500: Internal Server Error",
+  "2025 qbv1_regular_3: HTTP Error 500: Internal Server Error",
+  "2025 qbv1_regular_4: HTTP Error 500: Internal Server Error",
+  "2025 qbv1_regular_5: HTTP Error 500: Internal Server Error",
+  "2025 qbv1_regular_6: HTTP Error 500: Internal Server Error",
+  "2025 qbv1_regular_7: HTTP Error 500: Internal Server Error",
+  "2025 qbv1_regular_8: HTTP Error 500: Internal Server Error",
+  "2025 qbv1_regular_9: HTTP Error 500: Internal Server Error",
+  "2025 qbv1_regular_10: HTTP Error 500: Internal Server Error",
+  "2025 qbv1_regular_11: HTTP Error 500: Internal Server Error",
+  "2025 qbv1_regular_12: HTTP Error 500: Internal Server Error",
+  "2025 qbv1_regular_13: HTTP Error 500: Internal Server Error",
+  "2025 qbv1_regular_14: HTTP Error 500: Internal Server Error",
+  "2025 qbv1_regular_15: HTTP Error 500: Internal Server Error",
+  "2025 qbv1_regular_16: HTTP Error 500: Internal Server Error",
+  "2026 qbv1_regular_1: HTTP Error 500: Internal Server Error",
+  "2026 qbv1_regular_2: HTTP Error 500: Internal Server Error",
+  "2026 qbv1_regular_3: HTTP Error 500: Internal Server Error",
+  "2026 qbv1_regular_4: HTTP Error 500: Internal Server Error",
+  "2026 qbv1_regular_5: HTTP Error 500: Internal Server Error"
+ ]
 }
