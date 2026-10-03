@@ -1,0 +1,179 @@
+{
+ "updated": "2026-10-03 20:55 UTC",
+ "dev_seasons": [
+  2023,
+  2024
+ ],
+ "test_seasons": [
+  2025,
+  2026
+ ],
+ "market": {
+  "dev": {
+   "log_loss": 0.5224,
+   "picked_winner": 0.723,
+   "games": 1625
+  },
+  "test": {
+   "log_loss": 0.477,
+   "picked_winner": 0.77,
+   "games": 1336
+  }
+ },
+ "current_model": {
+  "dev": {
+   "log_loss": 0.5706,
+   "picked_winner": 0.706,
+   "games": 1625
+  },
+  "test": {
+   "log_loss": 0.5428,
+   "picked_winner": 0.737,
+   "games": 1336
+  }
+ },
+ "each_group_added": {
+  "sp_prev": {
+   "dev": {
+    "log_loss": 0.5714,
+    "picked_winner": 0.705,
+    "games": 1625
+   },
+   "test": {
+    "log_loss": 0.544,
+    "picked_winner": 0.735,
+    "games": 1336
+   }
+  },
+  "returning": {
+   "dev": {
+    "log_loss": 0.5665,
+    "picked_winner": 0.707,
+    "games": 1625
+   },
+   "test": {
+    "log_loss": 0.544,
+    "picked_winner": 0.74,
+    "games": 1336
+   }
+  },
+  "talent": {
+   "dev": {
+    "log_loss": 0.5666,
+    "picked_winner": 0.704,
+    "games": 1625
+   },
+   "test": {
+    "log_loss": 0.5436,
+    "picked_winner": 0.739,
+    "games": 1336
+   }
+  },
+  "portal": {
+   "dev": {
+    "log_loss": 0.5691,
+    "picked_winner": 0.71,
+    "games": 1625
+   },
+   "test": {
+    "log_loss": 0.5464,
+    "picked_winner": 0.731,
+    "games": 1336
+   }
+  },
+  "coach": {
+   "dev": {
+    "log_loss": 0.5698,
+    "picked_winner": 0.708,
+    "games": 1625
+   },
+   "test": {
+    "log_loss": 0.5448,
+    "picked_winner": 0.734,
+    "games": 1336
+   }
+  },
+  "line_move": {
+   "dev": {
+    "log_loss": 0.5682,
+    "picked_winner": 0.713,
+    "games": 1625
+   },
+   "test": {
+    "log_loss": 0.5435,
+    "picked_winner": 0.734,
+    "games": 1336
+   }
+  },
+  "advanced": {
+   "dev": {
+    "log_loss": 0.5669,
+    "picked_winner": 0.705,
+    "games": 1625
+   },
+   "test": {
+    "log_loss": 0.5364,
+    "picked_winner": 0.737,
+    "games": 1336
+   }
+  }
+ },
+ "selected_groups": [
+  "returning",
+  "talent",
+  "line_move",
+  "advanced",
+  "portal"
+ ],
+ "selected_model": {
+  "dev": {
+   "log_loss": 0.5559,
+   "picked_winner": 0.722,
+   "games": 1625
+  },
+  "test": {
+   "log_loss": 0.5418,
+   "picked_winner": 0.739,
+   "games": 1336
+  }
+ },
+ "all_groups": {
+  "dev": {
+   "log_loss": 0.5563,
+   "picked_winner": 0.719,
+   "games": 1625
+  },
+  "test": {
+   "log_loss": 0.5442,
+   "picked_winner": 0.73,
+   "games": 1336
+  }
+ },
+ "fbs_vs_fbs_only": {
+  "market": {
+   "dev": {
+    "log_loss": 0.5323,
+    "picked_winner": 0.717,
+    "games": 1559
+   },
+   "test": {
+    "log_loss": 0.51,
+    "picked_winner": 0.746,
+    "games": 1004
+   }
+  },
+  "selected_model": {
+   "dev": {
+    "log_loss": 0.5631,
+    "picked_winner": 0.715,
+    "games": 1559
+   },
+   "test": {
+    "log_loss": 0.5536,
+    "picked_winner": 0.728,
+    "games": 1004
+   }
+  }
+ },
+ "download_problems": []
+}
