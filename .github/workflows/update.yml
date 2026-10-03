@@ -45,7 +45,7 @@ jobs:
         continue-on-error: true
         run: |
           mkdir -p /tmp/keep
-          cp -r data.json cfb_data.json cfb_cache /tmp/keep/ 2>/dev/null || true
+          cp -r data.json cfb_data.json cfb_eval.json cfb_features.json cfb_cache /tmp/keep/ 2>/dev/null || true
           git fetch origin main
           git reset --hard origin/main
           cp -r /tmp/keep/. .
@@ -54,6 +54,7 @@ jobs:
           git add data.json
           git add cfb_data.json 2>/dev/null || true
           git add cfb_cache 2>/dev/null || true
+          git add cfb_eval.json cfb_features.json 2>/dev/null || true
           git diff --staged --quiet || git commit -m "Update data"
           git push
 
@@ -62,6 +63,7 @@ jobs:
           mkdir site
           cp index.html college.html data.json site/
           cp cfb_data.json site/ 2>/dev/null || true
+          cp cfb_eval.json site/ 2>/dev/null || true
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
