@@ -23,6 +23,7 @@ L2 = 0.01
 REFRESH_HOURS_UTC = (10, 22)
 BOOKS = ("DraftKings", "ESPN Bet", "FanDuel", "Bovada", "William Hill (New Jersey)", "consensus")
 DEV, TEST_FROM = (2023, 2024), 2025
+EVAL_VERSION = 2   # bump to force a re-test
 GROUPS = ["sp_prev", "returning", "talent", "portal", "coach", "line_move", "advanced", "qb", "turnovers", "havoc", "fcs"]
 failed = []
 
@@ -51,10 +52,19 @@ def api(path, **params):
         return json.load(r)
 
 
+RETRY_DAYS = 7
+
+
 def cached(name, yr, path, refresh=False, required=False, **params):
+    """Download once and keep. Failed downloads are retried after RETRY_DAYS so a broken
+    endpoint can't use up the monthly request limit."""
     os.makedirs(CACHE, exist_ok=True)
     f = os.path.join(CACHE, f"{yr}_{name}.json")
-    if refresh or not os.path.exists(f):
+    fail, ok = f + ".fail", f + ".ok"
+    have = os.path.exists(f)
+    legacy_empty = have and not os.path.exists(ok) and os.path.getsize(f) <= 2   # [] left by an earlier failed run
+    recent_fail = os.path.exists(fail) and (dt.datetime.now().timestamp() - os.path.getmtime(fail)) < RETRY_DAYS * 86400
+    if (refresh or not have or legacy_empty) and not (recent_fail and not refresh):
         try:
             data = api(path, **params)
         except Exception as e:
@@ -62,13 +72,18 @@ def cached(name, yr, path, refresh=False, required=False, **params):
                 raise
             print("could not download", yr, name, "-", e)
             failed.append(f"{yr} {name}: {e}")
-            if os.path.exists(f):
-                return json.load(open(f))
-            json.dump([], open(f, "w"))   # don't spend API calls retrying every run; delete the file to retry
-            return []
+            open(fail, "w").write(str(e))
+            if not have:
+                json.dump([], open(f, "w"))
+            return json.load(open(f))
         json.dump(data, open(f, "w"))
+        if os.path.exists(fail):
+            os.remove(fail)
+        open(ok, "w").write("ok")
         print("downloaded", yr, name, len(data))
-    return json.load(open(f))
+    elif recent_fail:
+        failed.append(f"{yr} {name}: skipped, failed recently (retry after {RETRY_DAYS} days)")
+    return json.load(open(f)) if os.path.exists(f) else []
 
 
 def weekly(y, cur, games, name, path, **extra):
@@ -87,7 +102,7 @@ def fetch_season(y, cur):
     r = y == cur
     games = cached("games", y, "/games", r, True, year=y, seasonType="both")
     return dict(
-        qbs=weekly(y, cur, games, "qbv1", "/ppa/players/games", position="QB", excludeGarbageTime="true", threshold=10),
+        qbs=weekly(y, cur, games, "qbv2", "/ppa/players/games", position="QB"),
         box=weekly(y, cur, games, "boxv1", "/games/teams"),
         games=games,
         lines=cached("lines", y, "/lines", r, True, year=y, seasonType="both"),
@@ -386,6 +401,8 @@ def run():
     saved = json.load(open(FEATS)) if os.path.exists(FEATS) else None
     if isinstance(saved, dict):
         selected, tested = saved.get("selected"), saved.get("tested")
+        if saved.get("version") != EVAL_VERSION:
+            tested = None
     else:
         selected, tested = saved, None
     if selected is None or tested != GROUPS or ev == "workflow_dispatch":
@@ -417,7 +434,7 @@ def run():
                                          selected_model=dict(dev=score(Ps, DEV, fbs), test=score(Ps, test, fbs)))
         report["download_problems"] = failed
         json.dump(report, open(EVAL, "w"), indent=1)
-        json.dump(dict(selected=sel, tested=GROUPS), open(FEATS, "w"))
+        json.dump(dict(selected=sel, tested=GROUPS, version=EVAL_VERSION), open(FEATS, "w"))
         selected = sel
         print(json.dumps(report, indent=1))
 
