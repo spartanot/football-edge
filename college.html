@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Football Edge</title>
+<title>Football Edge College</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏈</text></svg>">
 <style>
 :root{--bg:#f4f5f7;--card:#fff;--tx:#14171a;--mu:#6b7280;--ac:#1a7f4b;--bd:#e2e5e9;--bad:#c0392b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -39,18 +39,18 @@ td,th{padding:6px 4px;text-align:left;border-bottom:1px solid var(--bd)}
 .sc{display:flex;gap:6px;margin-top:6px}.sc input{padding:6px;font-size:14px}
 </style></head><body><div id="gate" hidden><div style="max-width:380px"><h1>🏈 Football Edge</h1><p>This is a play-money betting simulator. No real money can be deposited, won, or withdrawn.</p><p>You must be 18 or older (21+ in some places) to use it.</p><button class="btn" id="agy">I'm 18 or older</button><p class="mu">If gambling is causing problems for you or someone you know, call or text 1-800-GAMBLER.</p></div></div>
 <main>
-<h1>🏈 Football Edge <span class="mu" style="font-size:14px;font-weight:400">NFL <span id="seasonLbl"></span></span></h1>
+<h1>🏈 Football Edge <span class="mu" style="font-size:14px;font-weight:400">College <span id="seasonLbl"></span></span></h1>
 
-<div class="seg" id="nav"><button class="on" onclick="location.href='./'">NFL</button><button onclick="location.href='college.html'">College</button></div>
-<div class="seg" id="tabs"><button class="on" data-t="p">Play</button><button data-t="a">Analyze</button><button data-t="b">Tracker</button><button data-t="r">Results</button></div>
+<div class="seg" id="nav"><button onclick="location.href='./'">NFL</button><button class="on" onclick="location.href='college.html'">College</button></div>
+<div class="seg" id="tabs"><button class="on" data-t="p">Play</button><button data-t="r">Results</button></div>
 
 <div id="P">
 <div class="card"><div class="mu">Play-money balance</div><div class="big" id="bal"></div><div class="mu" id="pst"></div>
 <svg id="chart" viewBox="0 0 300 70" style="width:100%;height:70px;margin-top:8px"></svg>
 <div style="margin-top:6px"><button class="sm" id="rst">Reset to $1,000</button><button class="sm" id="hist">Bet history</button></div></div>
 <div class="card" id="bestCard"><b>Best bets this week</b><div class="mu" style="margin-top:4px">The three most likely winners where the oddsmakers and our model agree. Tap one to add it to your bet slip.</div><div id="bestList"></div><div class="mu" id="bestRec" style="margin-top:8px"></div></div>
-<div class="card"><b>How to read the predictions</b><div class="mu" style="margin-top:4px">Each game shows two win chances. <b>Oddsmakers</b> is the sportsbook line with its margin removed. <b>Data model</b> is our own model built from quarterback play, opponent-adjusted team efficiency (play-by-play EPA), an Elo rating from past scores, and home field. <span id="accTxt"></span> The model is retrained every day on past seasons plus this season's finished games. Use it as a second opinion, not an edge.</div><div class="mu" style="margin-top:6px"><span class="vb">Orange</span> marks a <b>model value bet</b>: a moneyline where the model's win chance times the payout beats the cost by at least 3%. <span id="valLeg"></span></div></div>
-<div class="card"><b>Upcoming NFL games</b><div class="mu">Sportsbook lines from nflverse, updated <span id="updTxt"></span> (<a href="https://github.com/spartanot/football-edge/actions/workflows/update.yml" target="_blank" rel="noopener" style="color:var(--ac)">update now</a>, site owner only). Bets settle automatically when final scores come in, or enter a final score yourself.</div><div id="games"></div></div>
+<div class="card"><b>How to read the predictions</b><div class="mu" style="margin-top:4px">Each game shows two win chances. <b>Oddsmakers</b> is the sportsbook line with its margin removed. <b>Data model</b> is our own model built from opponent-adjusted passing and rushing efficiency (PPA, college football's version of EPA), an Elo rating from past scores, and home field. <span id="accTxt"></span> The model is retrained every day on past seasons plus this season's finished games. Use it as a second opinion, not an edge.</div><div class="mu" style="margin-top:6px"><span class="vb">Orange</span> marks a <b>model value bet</b>: a moneyline where the model's win chance times the payout beats the cost by at least 3%. <span id="valLeg"></span></div></div>
+<div class="card"><b>Upcoming college games</b><div class="mu">Sportsbook lines from CollegeFootballData.com, updated <span id="updTxt"></span> (<a href="https://github.com/spartanot/football-edge/actions/workflows/update.yml" target="_blank" rel="noopener" style="color:var(--ac)">update now</a>, site owner only). Bets settle automatically when final scores come in, or enter a final score yourself.</div><div class="row" style="margin-top:8px"><div><label>Conference</label><select id="cf"><option value="">All conferences</option></select></div><div><label>Team</label><input id="q" placeholder="Search"></div></div><div id="games"></div></div>
 <div class="card" id="bh" hidden></div>
 <div class="card slip" id="slip" hidden></div>
 </div>
@@ -99,7 +99,7 @@ td,th{padding:6px 4px;text-align:left;border-bottom:1px solid var(--bd)}
 </div>
 
 <div id="R" hidden>
-<div class="card"><b>This season: $100 on every bet</b><div class="mu" style="margin-top:4px">Every game this season so far, with real closing moneylines. Three hypothetical strategies: bet the oddsmakers' favorite every game, bet the data model's pick every game, or bet only where the model sees at least a 3% edge (value bets). The model was trained only on earlier seasons, so it never saw these results in advance. Ties count as pushes.</div>
+<div class="card"><b>This season: $100 on every bet</b><div class="mu" style="margin-top:4px">Every game this season so far, with real sportsbook moneylines. Three hypothetical strategies: bet the oddsmakers' favorite every game, bet the data model's pick every game, or bet only where the model sees at least a 3% edge (value bets). The model was trained only on earlier seasons, so it never saw these results in advance. Ties count as pushes.</div>
 <select id="rs" hidden></select><div style="margin-top:10px"><label>Week</label><select id="rw"></select></div></div>
 <div id="rsum"></div>
 <div class="card"><b>Running profit</b><svg id="rch" viewBox="0 0 300 120" style="width:100%;height:120px;margin-top:6px"></svg><div class="mu" id="rleg"></div></div>
@@ -123,7 +123,7 @@ td,th{padding:6px 4px;text-align:left;border-bottom:1px solid var(--bd)}
 <p class="mu">Play money only. Help with problem gambling: <a href="tel:18004262537" style="color:var(--ac)">1-800-GAMBLER</a>. For entertainment and analysis only. Models rarely beat the market; never bet money you can't afford to lose. Must be of legal age where you live.</p>
 
 <script>
-fetch('data.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(D=>{
+fetch('cfb_data.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(D=>{
 const $=id=>document.getElementById(id);
 const PRESET={nfl:{hfa:48},cfb:{hfa:65}};
 let league='nfl';
@@ -236,7 +236,7 @@ setLeague('nfl');render();
 const GAMES=D.games;
 const ld=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}};
 const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
-let PM=ld('fe_pm',null)||{bal:1000,bets:[],scores:{},histo:[1000],resets:0};
+let PM=ld('fe_pm_cfb',null)||{bal:1000,bets:[],scores:{},histo:[1000],resets:0};
 let SL=[],parlay=false;
 const am=o=>(o>0?'+':'')+o, sgn=x=>(x>0?'+':'')+x;
 function mkts(g){return[
@@ -247,7 +247,7 @@ function grade(k,sc,ln){const[id,t,s]=k.split('|'),g=GAMES.find(x=>x.id===id)||{
  if(t==='ml')v=s==='h'?h-a:a-h;else if(t==='sp')v=s==='h'?h-a-L:a-h+L;else v=s==='o'?h+a-L:L-h-a;
  return v>0?'W':v<0?'L':'P'}
 function renderGames(){const used=new Set(SL.map(x=>x.k));
- $('games').innerHTML=(UPC.length?'':'<div class="mu" style="margin-top:8px">No upcoming games with lines yet. Check back after the next update.</div>')+UPC.map(g=>{const sc=PM.scores[g.id],dt=new Date(g.d+'T12:00:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
+ $('games').innerHTML=(UPC.length?'':'<div class="mu" style="margin-top:8px">No upcoming games with lines yet. Check back after the next update.</div>')+UPCF().map(g=>{const sc=PM.scores[g.id],dt=new Date(g.d+'T12:00:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
   return `<div class="gm"><b>${g.a} @ ${g.h}</b> <span class="mu">${dt}, ${g.t} ET</span>${sc?` <span class="pos">Final: ${g.a} ${sc.a}, ${g.h} ${sc.h}</span>`:''}
   ${predHTML(g)}<div class="odds">${mkts(g).map(m=>`<button class="ob ${used.has(m.k)?'sel':''} ${m.k.split('|')[1]==='ml'&&vEdge(g,m.k.split('|')[2])>=.03?'val':''}" ${sc?'disabled':''} onclick="tog('${m.k}')">${m.lab}<br><b>${am(m.o)}</b></button>`).join('')}</div>
   ${sc?'':`<div class="sc"><input id="sa_${g.id}" type="number" inputmode="numeric" placeholder="${g.a} final"><input id="sh_${g.id}" type="number" inputmode="numeric" placeholder="${g.h} final"><button class="sm" onclick="fin('${g.id}')">Settle</button></div>`}</div>`}).join('')}
@@ -277,7 +277,7 @@ function settle(){for(const b of PM.bets){if(b.r!=='O')continue;
   if(rs.includes('L')){b.r='L';b.pay=0}else if(rs.includes('O'))continue;
   else{let m=1;b.legs.forEach((l,i)=>{if(rs[i]==='W')m*=dec(l.o)});b.pay=b.s*m;b.r=m===1?'P':'W';PM.bal+=b.pay;PM.histo.push(PM.bal)}}}
 window.fin=id=>{const a=$('sa_'+id).value,h=$('sh_'+id).value;if(a===''||h==='')return;PM.scores[id]={a:+a,h:+h};settle();saveP();renderAll()};
-function saveP(){sv('fe_pm',PM)}
+function saveP(){sv('fe_pm_cfb',PM)}
 function stats(){const s=PM.bets.filter(b=>b.r==='W'||b.r==='L'),w=s.filter(b=>b.r==='W').length,stk=s.reduce((a,b)=>a+b.s,0),ret=s.reduce((a,b)=>a+(b.pay||0),0);
  let run=0,ms=0;s.forEach(b=>{if(b.r==='L'){run++;ms=Math.max(ms,run)}else run=0});
  const open=PM.bets.filter(b=>b.r==='O');
@@ -305,7 +305,10 @@ function renderBest(){const wk=UPC.length?Math.min(...UPC.map(g=>g.wk)):null,c=[
  const top=c.sort((x,y)=>y.avg-x.avg).slice(0,3);
  $('bestList').innerHTML=top.length?top.map((b,i)=>`<div class="gm"><b>${i+1}. ${b.t} to win</b> <span class="mu">${b.g.a} @ ${b.g.h}, week ${b.g.wk}</span><div class="pr">Oddsmakers ${Math.round(b.pk*100)}% · Model ${Math.round(b.pmod*100)}% · Line ${am(b.o)} (a $100 bet wins ${usd(100*(dec(b.o)-1))})</div><button class="sm" style="margin-top:6px" onclick="tog('${b.g.id}|ml|${b.sd}')">Add to bet slip</button></div>`).join(''):'<div class="mu" style="margin-top:8px">No picks right now. Check back after the next update.</div>';
  const B=St.best||{n:0};
- $('bestRec').textContent=(B.n?`This season, these picks have won ${B.w} of ${B.n} (${pc(B.w,B.n)}). $100 on each would be ${B.profit>=0?'up':'down'} ${usd(Math.abs(B.profit))}. `:'')+'In testing on past seasons they won about 79% of the time but still lost about 2% per bet, because favorites pay so little. Most likely to win is not the same as a good bet.'}
+ $('bestRec').textContent=(B.n?`This season, these picks have won ${B.w} of ${B.n} (${pc(B.w,B.n)}). $100 on each would be ${B.profit>=0?'up':'down'} ${usd(Math.abs(B.profit))}. `:'')+'Favorites pay little, so one upset can erase several wins. Most likely to win is not the same as a good bet.'}
+function UPCF(){const cf=$('cf').value,q=$('q').value.trim().toLowerCase();return UPC.filter(g=>(!cf||g.ac===cf||g.hc===cf)&&(!q||g.a.toLowerCase().includes(q)||g.h.toLowerCase().includes(q)))}
+$('cf').innerHTML+=[...new Set(UPC.flatMap(g=>[g.ac,g.hc]).filter(Boolean))].sort().map(x=>`<option>${x}</option>`).join('');
+$('cf').onchange=renderGames;$('q').oninput=renderGames;
 renderBest();
 $('valLeg').textContent=St.vn?`This season, value bets have won ${St.vw} of ${St.vn}; $100 on each would be ${St.vprofit>=0?'up':'down'} ${usd(Math.abs(St.vprofit||0))}. Most are underdogs, so results swing a lot and this early they are mostly luck.`:'';
 settle();saveP();renderAll();
