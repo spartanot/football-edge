@@ -29,7 +29,8 @@ td,th{padding:6px 4px;text-align:left;border-bottom:1px solid var(--bd)}
 .gm{border-top:1px solid var(--bd);padding:10px 0}.gm:first-child{border-top:0}
 .odds{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
 .ob{padding:8px 4px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font-size:13px;line-height:1.25}
-.ob.val{border:2px solid #d9822b}.eb{display:inline-block;background:#d9822b;color:#fff;font-size:11px;font-weight:700;border-radius:9px;padding:1px 6px;margin-left:4px;vertical-align:2px}
+.ob.val{border:2px solid #d9822b}.dg{color:var(--ac)}
+.eb{display:inline-block;background:#d9822b;color:#fff;font-size:11px;font-weight:700;border-radius:9px;padding:1px 6px;margin-left:4px;vertical-align:2px}
 .ob.spv{border:2px solid var(--ac)}.vb{color:#d9822b;font-weight:600}
 .ob.sel{background:var(--ac);color:#fff;border-color:var(--ac)}
 .ob:disabled{opacity:.45}
@@ -48,13 +49,13 @@ td,th{padding:6px 4px;text-align:left;border-bottom:1px solid var(--bd)}
 <div class="seg" id="top"><button class="on" data-v="g">Games</button><button data-v="m">More</button></div>
 <div id="more" hidden><div class="seg" id="tabs"><button class="on" data-t="p">Play</button><button data-t="a">Analyze</button><button data-t="b">Tracker</button><button data-t="k">Picks</button><button data-t="r">Results</button></div></div>
 
-<div id="G"><div class="card"><input id="gq" placeholder="Search for a team"><div class="mu" id="gnote" style="margin-top:6px"></div></div><div id="gMain"></div></div>
+<div id="G"><div class="card"><input id="gq" placeholder="Search for a team"><label style="margin-top:8px;font-size:13px;color:var(--tx)"><input type="checkbox" id="gall" style="width:auto"> Show all games</label><div class="mu" id="gnote" style="margin-top:6px"></div></div><div id="gMain"></div></div>
 <div id="P" hidden>
 <div class="card"><div class="mu">Play-money balance</div><div class="big" id="bal"></div><div class="mu" id="pst"></div>
 <svg id="chart" viewBox="0 0 300 70" style="width:100%;height:70px;margin-top:8px"></svg>
 <div style="margin-top:6px"><button class="sm" id="rst">Reset to $1,000</button><button class="sm" id="hist">Bet history</button></div></div>
 <div class="card" id="bestCard"><b>Best bets this week</b><div class="mu" style="margin-top:4px">The three most likely winners where the oddsmakers and our model agree. Tap one to add it to your bet slip.</div><div id="bestList"></div><div class="mu" id="bestRec" style="margin-top:8px"></div></div>
-<div class="card"><b>How to read the predictions</b><div class="mu" style="margin-top:4px">Each game shows two win chances. <b>Oddsmakers</b> is the sportsbook line with its margin removed. <b>Data model</b> is our own model built from quarterback play, opponent-adjusted team efficiency (play-by-play EPA), an Elo rating from past scores, and home field. <span id="accTxt"></span> The model is retrained every day on past seasons plus this season's finished games. Use it as a second opinion, not an edge.</div><div class="mu" style="margin-top:6px"><span class="vb">Orange</span> marks a <b>model value bet</b>: a moneyline where the model's win chance times the payout beats the cost by at least 3%. The orange score next to a team name (1 to 10) rates the size of the model's edge: about 1 point per 4% of edge, so 3% scores 1 and 40% or more scores 10. It measures how much the model disagrees with the oddsmakers, not how likely the bet is to win. <span style="color:var(--ac);font-weight:600">Green</span> marks the underdog's spread in those same games. <span id="valLeg"></span></div></div>
+<div class="card"><b>How to read the predictions</b><div class="mu" style="margin-top:4px">Each game shows two win chances. <b>Oddsmakers</b> is the sportsbook line with its margin removed. <b>Data model</b> is our own model built from quarterback play, opponent-adjusted team efficiency (play-by-play EPA), an Elo rating from past scores, and home field. <span id="accTxt"></span> The model is retrained every day on past seasons plus this season's finished games. Use it as a second opinion, not an edge.</div><div class="mu" style="margin-top:6px"><span class="vb">Orange</span> marks a <b>model value bet</b>: a moneyline where the model's win chance times the payout beats the cost by at least 3%. The orange score next to a team name (1 to 10) rates the size of the model's edge: about 1 point per 4% of edge, so 3% scores 1 and 40% or more scores 10. It measures how much the model disagrees with the oddsmakers, not how likely the bet is to win. <span id="valLeg"></span></div></div>
 <div class="card"><b>Upcoming NFL games</b><div class="mu">Sportsbook lines from nflverse, updated <span id="updTxt"></span> (<a href="https://github.com/spartanot/football-edge/actions/workflows/update.yml" target="_blank" rel="noopener" style="color:var(--ac)">update now</a>, site owner only). Bets settle automatically when final scores come in, or enter a final score yourself.</div><div id="games"></div></div>
 <div class="card" id="bh" hidden></div>
 <div class="card slip" id="slip" hidden></div>
@@ -259,16 +260,18 @@ function grade(k,sc,ln){const[id,t,s]=k.split('|'),g=GAMES.find(x=>x.id===id)||{
 function renderGames(){const used=new Set(SL.map(x=>x.k));
  $('games').innerHTML=(UPC.length?'':'<div class="mu" style="margin-top:8px">No upcoming games with lines yet. Check back after the next update.</div>')+UPC.map(g=>{const sc=PM.scores[g.id],dt=new Date(g.d+'T12:00:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
   return `<div class="gm"><b>${tn(g,'a')} @ ${tn(g,'h')}</b> <span class="mu">${dt}, ${g.t} ET</span>${sc?` <span class="pos">Final: ${g.a} ${sc.a}, ${g.h} ${sc.h}</span>`:''}
-  ${predHTML(g)}<div class="odds">${mkts(g).map(m=>`<button class="ob ${used.has(m.k)?'sel':''} ${m.k.split('|')[1]==='ml'&&vEdge(g,m.k.split('|')[2])>=.03?'val':''} ${valGame(g)&&dogSp(g)&&dogSp(g).k===m.k?'spv':''}" ${sc?'disabled':''} onclick="tog('${m.k}')">${m.lab}<br><b>${am(m.o)}</b></button>`).join('')}</div>
+  ${predHTML(g)}<div class="odds">${mkts(g).map(m=>`<button class="ob ${used.has(m.k)?'sel':''} ${m.k.split('|')[1]==='ml'&&vEdge(g,m.k.split('|')[2])>=.03?'val':''}" ${sc?'disabled':''} onclick="tog('${m.k}')">${m.lab}<br><b>${am(m.o)}</b></button>`).join('')}</div>
   ${sc?'':`<div class="sc"><input id="sa_${g.id}" type="number" inputmode="numeric" placeholder="${g.a} final"><input id="sh_${g.id}" type="number" inputmode="numeric" placeholder="${g.h} final"><button class="sm" onclick="fin('${g.id}')">Settle</button></div>`}</div>`}).join('')}
 const vEdge=(g,sd)=>{const o=sd==='h'?g.hm:g.am;return o==null?-1:(sd==='h'?g.mp:1-g.mp)*dec(o)-1};
 const eScore=e=>Math.min(10,Math.max(1,Math.round(e*25)));
 const tn=(g,sd)=>{const t=sd==='h'?g.h:g.a,e=vEdge(g,sd);return e>=.03?`${t}<span class="eb" title="Model edge score">${eScore(e)}/10</span>`:t};
+const maxScore=g=>Math.max(...['a','h'].map(sd=>vEdge(g,sd)>=.03?eScore(vEdge(g,sd)):0));
+const tnG=(g,sd)=>{const d=valGame(g)&&dogSp(g)&&dogSp(g).k.endsWith('|'+sd)?dogSp(g):null;const t=sd==='h'?g.h:g.a,e=vEdge(g,sd);return (d?`<span class="dg">${d.lab}</span>`:t)+(e>=.03?`<span class="eb">${eScore(e)}/10</span>`:'')};
 const valGame=g=>vEdge(g,'h')>=.03||vEdge(g,'a')>=.03;
 const dogSp=g=>g.sp==null?null:(g.kp>=.5?{k:g.id+'|sp|a',lab:g.a+' '+sgn(g.sp),o:g.aso}:{k:g.id+'|sp|h',lab:g.h+' '+sgn(-g.sp),o:g.hso});
 function predHTML(g){const k=g.kp,m=g.mp,fav=p=>p>=.5?g.h+' '+Math.round(p*100)+'%':g.a+' '+Math.round((1-p)*100)+'%';
  const dis=(k>=.5)!==(m>=.5);
- return `<div class="pr">${g.aq?`QBs: ${g.aq} vs ${g.hq}<br>`:''}${g.ns?'Neutral site<br>':''}Oddsmakers: <b style="color:var(--tx)">${fav(k)}</b><div class="bar"><i style="width:${Math.round(k*100)}%"></i></div>Data model: <b style="color:var(--tx)">${fav(m)}</b>${dis?' <span class="neg">· disagrees with the oddsmakers</span>':''}<div class="bar"><i style="width:${Math.round(m*100)}%;opacity:.6"></i></div><span style="font-size:11px">Bars show the home team (${g.h}) win chance.</span>${['a','h'].filter(sd=>vEdge(g,sd)>=.03).map(sd=>`<div class="vb" style="margin-top:4px">Model value bet: ${sd==='h'?g.h:g.a} ${am(sd==='h'?g.hm:g.am)} (model edge ${Math.round(vEdge(g,sd)*100)}%, score ${eScore(vEdge(g,sd))}/10)</div>`).join('')}${valGame(g)&&dogSp(g)?`<div style="color:var(--ac);font-weight:600;margin-top:2px">Underdog spread: ${dogSp(g).lab} ${am(dogSp(g).o)}</div>`:''}</div>`}
+ return `<div class="pr">${g.aq?`QBs: ${g.aq} vs ${g.hq}<br>`:''}${g.ns?'Neutral site<br>':''}Oddsmakers: <b style="color:var(--tx)">${fav(k)}</b><div class="bar"><i style="width:${Math.round(k*100)}%"></i></div>Data model: <b style="color:var(--tx)">${fav(m)}</b>${dis?' <span class="neg">· disagrees with the oddsmakers</span>':''}<div class="bar"><i style="width:${Math.round(m*100)}%;opacity:.6"></i></div><span style="font-size:11px">Bars show the home team (${g.h}) win chance.</span>${['a','h'].filter(sd=>vEdge(g,sd)>=.03).map(sd=>`<div class="vb" style="margin-top:4px">Model value bet: ${sd==='h'?g.h:g.a} ${am(sd==='h'?g.hm:g.am)} (model edge ${Math.round(vEdge(g,sd)*100)}%, score ${eScore(vEdge(g,sd))}/10)</div>`).join('')}</div>`}
 window.tog=k=>{const i=SL.findIndex(x=>x.k===k);if(i>=0)SL.splice(i,1);else SL.push(sel(k));renderGames();renderSlip()};
 window.clr=()=>{SL=[];parlay=false;renderGames();renderSlip()};
 window.setP=v=>{parlay=v;renderSlip()};
@@ -377,25 +380,25 @@ function gcard(x){const g=x.g,lv=x.lv,P=predScore(g),fin=x.st==='final',live=x.s
  const fav=P.p>=.5?g.h:g.a,fp=Math.round(Math.max(P.p,1-P.p)*100);
  const right=fin&&sa!==sh?((sh>sa)===(P.p>=.5)):null;
  const bold=(a,b)=>a!=null&&b!=null&&a>b?'font-weight:700':'';
- return `<div class="gm"><div style="display:flex;justify-content:space-between;gap:8px"><b>${tn(g,'a')} @ ${tn(g,'h')}</b>${label}</div>
+ return `<div class="gm"><div style="display:flex;justify-content:space-between;gap:8px"><b>${tnG(g,'a')} @ ${tnG(g,'h')}</b>${label}</div>
  <table class="sct"><tr><th></th><th>${g.a}</th><th>${g.h}</th></tr>
  <tr><td>${fin?'Final':'Score'}</td><td style="${bold(sa,sh)}">${sa!=null?sa:'–'}</td><td style="${bold(sh,sa)}">${sh!=null?sh:'–'}</td></tr>
  <tr><td>Predicted</td><td>${P.a}</td><td>${P.h}</td></tr></table>
  <div class="mu" style="font-size:13px">Model: ${fav} ${fp}% to win${right===null?'':right?' · <span class="pos">model was right</span>':' · <span class="neg">model was wrong</span>'}</div></div>`}
 function renderMain(){const now=Date.now(),q=nz($('gq').value);
- const rows=GAMES.filter(g=>!q||nz(g.a).includes(q)||nz(g.h).includes(q)).map(g=>{const lv=liveFor(g),k=kick(g);let st;
+ const all=$('gall').checked;const rows=GAMES.filter(g=>(all||maxScore(g)>=3)&&(!q||nz(g.a).includes(q)||nz(g.h).includes(q))).map(g=>{const lv=liveFor(g),k=kick(g);let st;
   if(lv&&lv.st==='in')st='live';else if((lv&&lv.st==='post')||g.sh!=null)st='final';else if(k<=now&&now-k<4.5*3600e3)st='live';else st='pre';return{g,lv,k,st}});
  const remain=x=>{const l=x.lv;if(l&&l.st==='in'){const r=l.per>4?l.clk:(4-l.per)*900+l.clk;return r*2.6*1000}return x.k.getTime()+3.25*3600e3-now};
  const live=rows.filter(x=>x.st==='live').sort((a,b)=>remain(a)-remain(b));
  const up=rows.filter(x=>x.st==='pre'&&x.k>now&&x.k<=now+48*3600e3).sort((a,b)=>a.k-b.k);
  const past=rows.filter(x=>x.st==='final'&&x.k<=now&&x.k>=now-(48+3.5)*3600e3).sort((a,b)=>b.k-a.k);
  const sec=(t,L,empty)=>`<div class="card"><b>${t}</b>${L.length?L.map(gcard).join(''):`<div class="mu" style="margin-top:6px">${empty}</div>`}</div>`;
- $('gMain').innerHTML=(live.length?sec('Live now (ending soonest first)',live,''):'')+sec('Next 2 days',up,'No games in the next 2 days.')+sec('Final, last 2 days',past,'No finished games in the last 2 days.');
- $('gnote').textContent=(liveOK===true?'Live scores from ESPN, refreshed every minute. ':liveOK===false?'Live scores are unavailable right now, so scores update with each data refresh. ':'Loading live scores… ')+'Predicted scores combine our model\'s win chance with the betting total.'}
+ $('gMain').innerHTML=(live.length?sec('Live now (ending soonest first)',live,''):'')+sec('Next 2 days',up,all?'No games in the next 2 days.':'No games scoring 3/10 or higher in the next 2 days.')+sec('Final, last 2 days',past,all?'No finished games in the last 2 days.':'No finished games scoring 3/10 or higher in the last 2 days.');
+ $('gnote').textContent=(liveOK===true?'Live scores from ESPN, refreshed every minute. ':liveOK===false?'Live scores are unavailable right now, so scores update with each data refresh. ':'Loading live scores… ')+'Showing games with a model value score of 3/10 or higher unless "Show all games" is checked. Green team names show the underdog\'s spread in those games. Predicted scores combine our model\'s win chance with the betting total.'}
 function showView(v){document.querySelectorAll('#top button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));const g=v==='g';$('G').hidden=!g;$('more').hidden=g;
  if(g)['P','A','B','C','R','K'].forEach(k=>$(k).hidden=true);else(document.querySelector('#tabs button.on')||document.querySelector('#tabs button')).click()}
 document.querySelectorAll('#top button').forEach(b=>b.onclick=()=>showView(b.dataset.v));
-$('gq').oninput=renderMain;renderMain();fetchLive();setInterval(fetchLive,60000);
+$('gq').oninput=renderMain;$('gall').onchange=renderMain;renderMain();fetchLive();setInterval(fetchLive,60000);
 
 
 const PAST=D.past;
