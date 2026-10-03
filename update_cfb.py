@@ -23,7 +23,7 @@ L2 = 0.01
 REFRESH_HOURS_UTC = (10, 22)
 BOOKS = ("DraftKings", "ESPN Bet", "FanDuel", "Bovada", "William Hill (New Jersey)", "consensus")
 DEV, TEST_FROM = (2023, 2024), 2025
-GROUPS = ["sp_prev", "returning", "talent", "portal", "coach", "line_move", "advanced"]
+GROUPS = ["sp_prev", "returning", "talent", "portal", "coach", "line_move", "advanced", "qb", "turnovers", "havoc", "fcs"]
 failed = []
 
 
@@ -71,10 +71,25 @@ def cached(name, yr, path, refresh=False, required=False, **params):
     return json.load(open(f))
 
 
+def weekly(y, cur, games, name, path, **extra):
+    """Endpoints that need a week: cached per week; only the latest week of the current season is refreshed."""
+    weeks = sorted({(get(g, "seasonType", "season_type", default="regular"), int(get(g, "week", default=0)))
+                    for g in games if num(get(g, "homePoints", "home_points")) is not None})
+    out = []
+    for st, w in weeks:
+        rows = cached(f"{name}_{st}_{w}", y, path, refresh=(y == cur and (st, w) == weeks[-1]),
+                      year=y, week=w, seasonType=st, **extra)
+        out += [dict(r, _st=st, _w=w) for r in rows if isinstance(r, dict)]
+    return out
+
+
 def fetch_season(y, cur):
     r = y == cur
+    games = cached("games", y, "/games", r, True, year=y, seasonType="both")
     return dict(
-        games=cached("games", y, "/games", r, True, year=y, seasonType="both"),
+        qbs=weekly(y, cur, games, "qbv1", "/ppa/players/games", position="QB", excludeGarbageTime="true", threshold=10),
+        box=weekly(y, cur, games, "boxv1", "/games/teams"),
+        games=games,
         lines=cached("lines", y, "/lines", r, True, year=y, seasonType="both"),
         ppa=cached("ppa", y, "/ppa/games", r, True, year=y, excludeGarbageTime="true"),
         adv=cached("advanced", y, "/stats/game/advanced", r, year=y, excludeGarbageTime="true"),
@@ -238,6 +253,72 @@ def features(G, raw):
             early = max(0.0, 1 - g["week"] / 8)          # priors matter most early in the season
             M[i] = [dif] if grp == "coach" else [dif, dif * early]
         cols[grp] = M
+    # quarterback ratings: shrunk average passing PPA of the QB(s) each team used in its most recent game
+    qbg, allv = {}, []
+    for y, d in raw.items():
+        for r in d.get("qbs", []):
+            avg = get(r, "averagePPA", "average_ppa", default={}) or {}
+            v = num(get(avg, "pass"))
+            v = num(get(avg, "all")) if v is None else v
+            t = get(r, "team")
+            if v is None or not t:
+                continue
+            pid = str(get(r, "id", "playerId", default=get(r, "name")))
+            qbg.setdefault((y, r["_st"], r["_w"], t), []).append((pid, v)); allv.append(v)
+    lgq = float(np.mean(allv)) if allv else 0.0
+    qs, lastqb, QB, cur, K0 = {}, {}, np.zeros((n, 1)), None, 4.0
+    def trate(t):
+        ps = lastqb.get(t)
+        if not ps:
+            return lgq
+        return float(np.mean([(qs[p][0] + K0 * lgq) / (qs[p][1] + K0) for p in ps]))
+    for i, g in enumerate(G):
+        if g["season"] != cur:
+            for p in qs: qs[p][0] *= .7; qs[p][1] *= .7
+            cur = g["season"]
+        QB[i] = trate(g["h"]) - trate(g["a"])
+        if g["done"]:
+            for t in (g["h"], g["a"]):
+                ob = qbg.get((g["season"], g["stype"], g["week"], t))
+                if ob:
+                    for pid, v in ob:
+                        q = qs.setdefault(pid, [0.0, 0.0]); q[0] += v; q[1] += 1
+                    lastqb[t] = [pid for pid, _ in ob]
+    cols["qb"] = QB
+    # turnover margin and defensive havoc from team box scores (running averages, regressed between seasons)
+    box = {}
+    for d in raw.values():
+        for gm in d.get("box", []):
+            teams = get(gm, "teams", default=[]) or []
+            if len(teams) != 2:
+                continue
+            vals = []
+            for t in teams:
+                st = {get(x, "category"): num(get(x, "stat")) for x in (get(t, "stats", default=[]) or [])}
+                vals.append((get(t, "team", "school"), st))
+            (t1, s1), (t2, s2) = vals
+            to1, to2 = s1.get("turnovers") or 0, s2.get("turnovers") or 0
+            hv = lambda x: sum(x.get(k) or 0 for k in ("tacklesForLoss", "passesDeflected", "passesIntercepted", "fumblesRecovered"))
+            gid = str(get(gm, "id"))
+            box[(gid, t1)] = (to2 - to1, hv(s1)); box[(gid, t2)] = (to1 - to2, hv(s2))
+    def ema(j, a=.15, rev=.5):
+        m = float(np.mean([v[j] for v in box.values()])) if box else 0.0
+        st, out, cur = {}, np.zeros((n, 1)), None
+        for i, g in enumerate(G):
+            if g["season"] != cur:
+                for t in st: st[t] *= (1 - rev)
+                cur = g["season"]
+            out[i] = st.get(g["h"], 0) - st.get(g["a"], 0)
+            if g["done"]:
+                for t in (g["h"], g["a"]):
+                    ob = box.get((g["id"], t))
+                    if ob:
+                        st[t] = st.get(t, 0) + a * ((ob[j] - m) - st.get(t, 0))
+        return out
+    cols["turnovers"], cols["havoc"] = ema(0), ema(1)
+    # lower-division (FCS) adjustment: lets the model learn how much to discount FCS teams
+    fh = np.array([0.0 if g["hcl"] == "fbs" else 1.0 for g in G]); fa = np.array([0.0 if g["acl"] == "fbs" else 1.0 for g in G])
+    cols["fcs"] = np.column_stack([fa - fh, np.maximum(fa, fh) * cols["elo"][:, 0]])
     cols["line_move"] = np.array([[0.0 if g["spread"] is None or g["spread_open"] is None
                                    else g["spread_open"] - g["spread"]] for g in G])
     return cols
@@ -302,8 +383,12 @@ def run():
                     picked_winner=round(float(np.mean((p > .5) == (y[m] == 1))), 3), games=int(m.sum()))
 
     test = [s for s in range(TEST_FROM, season + 1)]
-    selected = json.load(open(FEATS)) if os.path.exists(FEATS) else None
-    if selected is None or ev == "workflow_dispatch":
+    saved = json.load(open(FEATS)) if os.path.exists(FEATS) else None
+    if isinstance(saved, dict):
+        selected, tested = saved.get("selected"), saved.get("tested")
+    else:
+        selected, tested = saved, None
+    if selected is None or tested != GROUPS or ev == "workflow_dispatch":
         seasons = list(DEV) + test
         report = dict(updated=now.strftime("%Y-%m-%d %H:%M UTC"), dev_seasons=list(DEV), test_seasons=test,
                       market=dict(dev=score(np.where(base, kp, np.nan), DEV), test=score(np.where(base, kp, np.nan), test)))
@@ -332,7 +417,7 @@ def run():
                                          selected_model=dict(dev=score(Ps, DEV, fbs), test=score(Ps, test, fbs)))
         report["download_problems"] = failed
         json.dump(report, open(EVAL, "w"), indent=1)
-        json.dump(sel, open(FEATS, "w"))
+        json.dump(dict(selected=sel, tested=GROUPS), open(FEATS, "w"))
         selected = sel
         print(json.dumps(report, indent=1))
 
