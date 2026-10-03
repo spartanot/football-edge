@@ -36,13 +36,14 @@ td,th{padding:6px 4px;text-align:left;border-bottom:1px solid var(--bd)}
 #gate[hidden]{display:none!important}
 #gate{position:fixed;inset:0;background:var(--bg);z-index:9;display:flex;align-items:center;justify-content:center;padding:24px}
 .pr{margin-top:6px;font-size:13px;color:var(--mu)}.bar{height:6px;border-radius:3px;background:var(--bd);overflow:hidden;margin:3px 0}.bar i{display:block;height:100%;background:var(--ac)}
+.pkb{margin-top:6px;padding:8px;border-radius:8px;background:var(--bg);border:1px solid var(--bd);font-size:14px}.pkg{border:2px solid var(--ac)}
 .sc{display:flex;gap:6px;margin-top:6px}.sc input{padding:6px;font-size:14px}
 </style></head><body><div id="gate" hidden><div style="max-width:380px"><h1>🏈 Football Edge</h1><p>This is a play-money betting simulator. No real money can be deposited, won, or withdrawn.</p><p>You must be 18 or older (21+ in some places) to use it.</p><button class="btn" id="agy">I'm 18 or older</button><p class="mu">If gambling is causing problems for you or someone you know, call or text 1-800-GAMBLER.</p></div></div>
 <main>
 <h1>🏈 Football Edge <span class="mu" style="font-size:14px;font-weight:400">NFL <span id="seasonLbl"></span></span></h1>
 
 <div class="seg" id="nav"><button class="on" onclick="location.href='./'">NFL</button><button onclick="location.href='college.html'">College</button></div>
-<div class="seg" id="tabs"><button class="on" data-t="p">Play</button><button data-t="a">Analyze</button><button data-t="b">Tracker</button><button data-t="r">Results</button></div>
+<div class="seg" id="tabs"><button class="on" data-t="p">Play</button><button data-t="a">Analyze</button><button data-t="b">Tracker</button><button data-t="k">Picks</button><button data-t="r">Results</button></div>
 
 <div id="P">
 <div class="card"><div class="mu">Play-money balance</div><div class="big" id="bal"></div><div class="mu" id="pst"></div>
@@ -98,6 +99,11 @@ td,th{padding:6px 4px;text-align:left;border-bottom:1px solid var(--bd)}
 <button class="sm" id="clr">Clear all bets</button>
 </div>
 
+<div id="K" hidden>
+<div class="card"><b>Picks</b><div class="mu" style="margin-top:4px">Each pick uses the betting market's own odds with the sportsbook's margin removed. In every test we ran, that predicted winners more reliably than any model we built, so it's the pick here. Each game also shows the bet with the best expected return across the moneyline, spread and total, using the pick's win chance to price the spread. Almost every bet has a small negative expected return because of the sportsbook's margin, so "best bet" usually means the least costly one. This tab is separate from your play-money balance and bets.</div></div>
+<div class="card" id="pkRec"></div>
+<div class="card"><b>Upcoming games</b><div id="pkList"></div></div>
+</div>
 <div id="R" hidden>
 <div class="card"><b>This season: $100 on every bet</b><div class="mu" style="margin-top:4px">Every game this season so far, with real closing moneylines. Three hypothetical strategies: bet the oddsmakers' favorite every game, bet the data model's pick every game, or bet only where the model sees at least a 3% edge (value bets). The model was trained only on earlier seasons, so it never saw these results in advance. Ties count as pushes.</div>
 <select id="rs" hidden></select><div style="margin-top:10px"><label>Week</label><select id="rw"></select></div></div>
@@ -157,7 +163,7 @@ function calc(){
 document.querySelectorAll('#lg button').forEach(b=>b.onclick=()=>setLeague(b.dataset.l));
 document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{
  document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));
- ['P','A','B','C','R'].forEach(k=>$(k).hidden=b.dataset.t!==k.toLowerCase());});
+ ['P','A','B','C','R','K'].forEach(k=>$(k).hidden=b.dataset.t!==k.toLowerCase());});
 
 let bets=[];
 try{bets=JSON.parse(localStorage.getItem('fe_bets')||'[]')}catch(e){}
@@ -309,6 +315,35 @@ function renderBest(){const wk=UPC.length?Math.min(...UPC.map(g=>g.wk)):null,c=[
 renderBest();
 $('valLeg').textContent=St.vn?`This season, value bets have won ${St.vw} of ${St.vn}; $100 on each would be ${St.vprofit>=0?'up':'down'} ${usd(Math.abs(St.vprofit||0))}. Most are underdogs, so results swing a lot and this early they are mostly luck.`:'';
 settle();saveP();renderAll();
+/* ---------- Picks tab (separate from play-money data) ---------- */
+const erf=x=>{const t=1/(1+.3275911*Math.abs(x)),y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);return x>=0?y:-y};
+const Phi=x=>.5*(1+erf(x/Math.SQRT2));
+const invPhi=p=>{let lo=-8,hi=8;for(let i=0;i<60;i++){const m=(lo+hi)/2;Phi(m)<p?lo=m:hi=m}return(lo+hi)/2};
+const PSD=String((GAMES[0]||{}).id||'').startsWith('cfb')?16:13.5;
+function pkBets(g){const p=Math.min(.995,Math.max(.005,g.kp)),mu=PSD*invPhi(p),out=[];
+ if(g.hm!=null&&g.am!=null){out.push({lab:g.h+' to win',o:g.hm,p,k:'ml',sd:'h'});out.push({lab:g.a+' to win',o:g.am,p:1-p,k:'ml',sd:'a'})}
+ if(g.sp!=null&&g.hso!=null&&g.aso!=null){const ph=1-Phi((g.sp-mu)/PSD);out.push({lab:g.h+' '+sgn(-g.sp),o:g.hso,p:ph,k:'sp',sd:'h',ln:g.sp});out.push({lab:g.a+' '+sgn(g.sp),o:g.aso,p:1-ph,k:'sp',sd:'a',ln:g.sp})}
+ if(g.tot!=null&&g.ov!=null&&g.un!=null){const io=1/dec(g.ov),iu=1/dec(g.un),po=io/(io+iu);out.push({lab:'Over '+g.tot,o:g.ov,p:po,k:'to',sd:'o',ln:g.tot});out.push({lab:'Under '+g.tot,o:g.un,p:1-po,k:'to',sd:'u',ln:g.tot})}
+ out.forEach(b=>b.ev=b.p*dec(b.o)-1);return out.sort((a,b)=>b.ev-a.ev)}
+function pkGrade(b,g){const m=g.sh-g.sa;let v;if(b.k==='ml')v=b.sd==='h'?m:-m;else if(b.k==='sp')v=b.sd==='h'?m-b.ln:b.ln-m;else v=b.sd==='o'?g.sh+g.sa-b.ln:b.ln-g.sh-g.sa;return v>0?'W':v<0?'L':'P'}
+const evTxt=e=>(e>=0?'+':'')+(e*100).toFixed(1)+'%';
+function renderPicks(){
+ const done=GAMES.filter(g=>g.sh!=null&&g.sh!==g.sa&&g.kp!=null);
+ const right=done.filter(g=>(g.kp>=.5)===(g.sh>g.sa)).length;
+ let n=0,w=0,l=0,pr=0;done.forEach(g=>{const b=pkBets(g)[0];if(!b)return;const r=pkGrade(b,g);n++;if(r==='W'){w++;pr+=100*(dec(b.o)-1)}else if(r==='L'){l++;pr-=100}});
+ $('pkRec').innerHTML=done.length?`<div class="big">${right} of ${done.length} picks right (${Math.round(right/done.length*100)}%)</div><div class="mu">$100 on each game's best bet: ${w}-${l}${n-w-l?'-'+(n-w-l):''}, <span class="${pr>=0?'pos':'neg'}">${pr>=0?'up':'down'} ${usd(Math.abs(pr))}</span> this season.</div>`:'<div class="mu">No finished games yet this season.</div>';
+ const list=(typeof UPCF==='function'?UPCF():UPC);
+ $('pkList').innerHTML=list.length?list.map(g=>{const p=g.kp,win=p>=.5?g.h:g.a,wp=Math.round(Math.max(p,1-p)*100),B=pkBets(g),b=B[0];
+  const agree=(g.mp>=.5)===(p>=.5);
+  const conf=wp>=80?'Strong':wp>=65?'Solid':wp>=55?'Lean':'Toss-up';
+  return `<div class="gm"><b>${g.a} @ ${g.h}</b> <span class="mu">${new Date(g.d+'T12:00:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</span>
+  <div style="margin-top:4px">Pick: <b>${win}</b> to win, ${wp}% <span class="mu">(${conf}${g.mp!=null?', our model '+(agree?'agrees':'disagrees'):''})</span></div>
+  <div class="bar"><i style="width:${Math.round(p*100)}%"></i></div>
+  ${b?`<div class="pkb ${b.ev>=0?'pkg':''}">Best bet: <b>${b.lab} ${am(b.o)}</b> · expected return ${evTxt(b.ev)} per bet${b.ev>=0?' (positive value)':' (the least costly bet here)'}</div>
+  <div class="mu" style="font-size:12px;margin-top:4px">Other bets: ${B.slice(1).map(x=>`${x.lab} ${am(x.o)} (${evTxt(x.ev)})`).join(' · ')}</div>`:'<div class="mu">No lines yet.</div>'}</div>`}).join(''):'<div class="mu" style="margin-top:8px">No upcoming games with lines yet.</div>'}
+renderPicks();
+if(typeof UPCF==='function'){$('cf').addEventListener('change',renderPicks);$('q').addEventListener('input',renderPicks)}
+
 const PAST=D.past;
 const STR=[{n:'Oddsmakers favorite',c:'#2f7ed8',f:r=>[r[10]>=.5?'h':'a']},{n:'Model pick',c:'var(--ac)',f:r=>[r[11]>=.5?'h':'a']},{n:'Model value bets',c:'#d9822b',f:r=>[['h',r[11],r[9]],['a',1-r[11],r[8]]].filter(x=>x[1]*dec(x[2])-1>=.03).map(x=>x[0])}];
 function pnl(r,sd){const[, , , ,a,h,sa,sh,ao,ho]=r;if(sa===sh)return 0;const won=(sh>sa)===(sd==='h');return won?100*(dec(sd==='h'?ho:ao)-1):-100}
