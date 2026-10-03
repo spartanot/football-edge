@@ -289,8 +289,12 @@ def run():
                 P[m] = sig(X[m] @ fit(X, base & (S < s)))
         return P
 
-    def score(P, seasons):
+    fbs = np.array([g["hcl"] == "fbs" and g["acl"] == "fbs" for g in G])
+
+    def score(P, seasons, extra=None):
         m = np.isin(S, seasons) & ~np.isnan(P) & base
+        if extra is not None:
+            m &= extra
         if not m.any():
             return None
         p = np.clip(P[m], 1e-6, 1 - 1e-6)
@@ -323,6 +327,9 @@ def run():
         report["selected_model"] = dict(dev=score(Ps, DEV), test=score(Ps, test))
         Pa = walk(GROUPS, seasons)
         report["all_groups"] = dict(dev=score(Pa, DEV), test=score(Pa, test))
+        mk = np.where(base, kp, np.nan)
+        report["fbs_vs_fbs_only"] = dict(market=dict(dev=score(mk, DEV, fbs), test=score(mk, test, fbs)),
+                                         selected_model=dict(dev=score(Ps, DEV, fbs), test=score(Ps, test, fbs)))
         report["download_problems"] = failed
         json.dump(report, open(EVAL, "w"), indent=1)
         json.dump(sel, open(FEATS, "w"))
@@ -341,12 +348,14 @@ def run():
                  am=None if np.isnan(am[i]) else int(am[i]), hm=None if np.isnan(hm[i]) else int(hm[i]),
                  sp=sp, aso=-110 if sp is not None else None, hso=-110 if sp is not None else None,
                  tot=g["tot"], ov=-110 if g["tot"] is not None else None, un=-110 if g["tot"] is not None else None,
-                 aq="", hq="", kp=round(float(kp[i]), 3), mp=round(float(p_now[i]), 3), ns=bool(g["neutral"]))
+                 aq="", hq="", kp=round(float(kp[i]), 3), mp=round(float(p_now[i]), 3), ns=bool(g["neutral"]),
+                 fbs=bool(fbs[i]))
         if g["done"]:
             o["sa"], o["sh"] = int(g["as_"]), int(g["hs"])
             if hasml[i]:
                 past.append([season, g["week"], "REG" if g["stype"] == "regular" else "POST", g["d"], g["a"], g["h"],
-                             int(g["as_"]), int(g["hs"]), int(am[i]), int(hm[i]), round(float(kp[i]), 3), round(float(p_past[i]), 3)])
+                             int(g["as_"]), int(g["hs"]), int(am[i]), int(hm[i]), round(float(kp[i]), 3), round(float(p_past[i]), 3),
+                             bool(fbs[i])])
         games.append(o)
 
     decided = [r for r in past if r[6] != r[7]]
