@@ -266,7 +266,9 @@ const vEdge=(g,sd)=>{const o=sd==='h'?g.hm:g.am;return o==null?-1:(sd==='h'?g.mp
 const eScore=e=>Math.min(10,Math.max(1,Math.round(e*25)));
 const tn=(g,sd)=>{const t=sd==='h'?g.h:g.a,e=vEdge(g,sd);return e>=.03?`${t}<span class="eb" title="Model edge score">${eScore(e)}/10</span>`:t};
 const maxScore=g=>Math.max(...['a','h'].map(sd=>vEdge(g,sd)>=.03?eScore(vEdge(g,sd)):0));
-const tnG=(g,sd)=>{const d=valGame(g)&&dogSp(g)&&dogSp(g).k.endsWith('|'+sd)?dogSp(g):null;const t=sd==='h'?g.h:g.a,e=vEdge(g,sd);return (d?`<span class="dg">${d.lab}</span>`:t)+(e>=.03?`<span class="eb">${eScore(e)}/10</span>`:'')};
+const dogSide=g=>g.kp>=.5?'a':'h';
+const dogEdge=g=>vEdge(g,dogSide(g));
+const tnG=(g,sd)=>{const d=dogEdge(g)>=.03&&dogSp(g)&&dogSp(g).k.endsWith('|'+sd)?dogSp(g):null;const t=sd==='h'?g.h:g.a,e=vEdge(g,sd);return (d?`<span class="dg">${d.lab}</span>`:t)+(e>=.03?`<span class="eb">${eScore(e)}/10</span>`:'')};
 const valGame=g=>vEdge(g,'h')>=.03||vEdge(g,'a')>=.03;
 const dogSp=g=>g.sp==null?null:(g.kp>=.5?{k:g.id+'|sp|a',lab:g.a+' '+sgn(g.sp),o:g.aso}:{k:g.id+'|sp|h',lab:g.h+' '+sgn(-g.sp),o:g.hso});
 function predHTML(g){const k=g.kp,m=g.mp,fav=p=>p>=.5?g.h+' '+Math.round(p*100)+'%':g.a+' '+Math.round((1-p)*100)+'%';
@@ -389,15 +391,15 @@ function gcard(x){const g=x.g,lv=x.lv,P=predScore(g),fin=x.st==='final',live=x.s
  <tr><td>Predicted</td><td>${P.a}</td><td>${P.h}</td></tr></table>
  <div class="mu" style="font-size:13px">Model: ${fav} ${fp}% to win${right===null?'':right?' · <span class="pos">model was right</span>':' · <span class="neg">model was wrong</span>'}</div></div>`}
 function renderMain(){const now=Date.now(),q=nz($('gq').value);
- const all=$('gall').checked;const rows=GAMES.filter(g=>(all||maxScore(g)>=3)&&(!q||nz(g.a).includes(q)||nz(g.h).includes(q))).map(g=>{const lv=liveFor(g),k=kick(g);let st;
+ const all=$('gall').checked;const rows=GAMES.filter(g=>(all||(dogEdge(g)>=.03&&eScore(dogEdge(g))>4))&&(!q||nz(g.a).includes(q)||nz(g.h).includes(q))).map(g=>{const lv=liveFor(g),k=kick(g);let st;
   if(lv&&lv.st==='in')st='live';else if((lv&&lv.st==='post')||g.sh!=null)st='final';else if(k<=now&&now-k<4.5*3600e3)st='live';else st='pre';return{g,lv,k,st}});
  const remain=x=>{const l=x.lv;if(l&&l.st==='in'){const r=l.per>4?l.clk:(4-l.per)*900+l.clk;return r*2.6*1000}return x.k.getTime()+3.25*3600e3-now};
  const live=rows.filter(x=>x.st==='live').sort((a,b)=>remain(a)-remain(b));
  const up=rows.filter(x=>x.st==='pre'&&x.k>now&&x.k<=now+48*3600e3).sort((a,b)=>a.k-b.k);
  const past=rows.filter(x=>x.st==='final'&&x.k<=now&&x.k>=now-(48+3.5)*3600e3).sort((a,b)=>b.k-a.k);
  const sec=(t,L,empty)=>`<div class="card"><b>${t}</b>${L.length?L.map(gcard).join(''):`<div class="mu" style="margin-top:6px">${empty}</div>`}</div>`;
- $('gMain').innerHTML=(live.length?sec('Live now (ending soonest first)',live,''):'')+sec('Next 2 days',up,all?'No games in the next 2 days.':'No games scoring 3/10 or higher in the next 2 days.')+sec('Final, last 2 days',past,all?'No finished games in the last 2 days.':'No finished games scoring 3/10 or higher in the last 2 days.');
- $('gnote').textContent=(liveOK===true?'Live scores from ESPN, refreshed every minute. ':liveOK===false?'Live scores are unavailable right now, so scores update with each data refresh. ':'Loading live scores… ')+'Showing games with a model value score of 3/10 or higher unless "Show all games" is checked. Green team names show the underdog\'s spread in those games. Predicted scores combine our model\'s win chance with the betting total.'}
+ $('gMain').innerHTML=(live.length?sec('Live now (ending soonest first)',live,''):'')+sec('Next 2 days',up,all?'No games in the next 2 days.':'No underdog value games scoring 5/10 or higher in the next 2 days.')+sec('Final, last 2 days',past,all?'No finished games in the last 2 days.':'No underdog value games scoring 5/10 or higher finished in the last 2 days.');
+ $('gnote').textContent=(liveOK===true?'Live scores from ESPN, refreshed every minute. ':liveOK===false?'Live scores are unavailable right now, so scores update with each data refresh. ':'Loading live scores… ')+'Showing only games where the model sees value in the underdog with a score of 5/10 or higher, unless "Show all games" is checked. Green team names show that underdog\'s spread. Predicted scores combine our model\'s win chance with the betting total.'}
 function showView(v){document.querySelectorAll('#top button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));const g=v==='g';$('G').hidden=!g;$('more').hidden=g;
  if(g)['P','A','B','C','R','K'].forEach(k=>$(k).hidden=true);else(document.querySelector('#tabs button.on')||document.querySelector('#tabs button')).click()}
 document.querySelectorAll('#top button').forEach(b=>b.onclick=()=>showView(b.dataset.v));
